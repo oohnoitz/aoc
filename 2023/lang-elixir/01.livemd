@@ -1,0 +1,122 @@
+<!-- livebook:{"file_entries":[{"file":{"file_system_id":"local","file_system_type":"local","path":"/data/aoc/2023/input/day01-p1t.txt"},"name":"day01-p1t.txt","type":"file"},{"file":{"file_system_id":"local","file_system_type":"local","path":"/data/aoc/2023/input/day01-p2t.txt"},"name":"day01-p2t.txt","type":"file"},{"file":{"file_system_id":"local","file_system_type":"local","path":"/data/aoc/2023/input/day01.txt"},"name":"day01.txt","type":"file"}]} -->
+
+# AoC 2023 - Day 1
+
+```elixir
+Mix.install([
+  {:kino, "~> 0.11.3"}
+])
+```
+
+## Part One
+
+```elixir
+input_p1t =
+  "day01-p1t.txt"
+  |> Kino.FS.file_path()
+  |> File.read!()
+  |> String.trim()
+```
+
+```elixir
+input =
+  "day01.txt"
+  |> Kino.FS.file_path()
+  |> File.read!()
+  |> String.trim()
+```
+
+```elixir
+defmodule PartA do
+  def solve(input) do
+    input
+    |> String.replace(~r/([A-Za-z])/, "")
+    |> String.split("\n")
+    |> Enum.map(&String.codepoints/1)
+    |> Enum.map(&(List.first(&1) <> List.last(&1)))
+    |> Enum.map(&String.to_integer/1)
+    |> Enum.sum()
+  end
+end
+```
+
+```elixir
+PartA.solve(input_p1t)
+```
+
+```elixir
+PartA.solve(input)
+```
+
+## Part Two
+
+```elixir
+input_p2t =
+  "day01-p2t.txt"
+  |> Kino.FS.file_path()
+  |> File.read!()
+  |> String.trim()
+```
+
+```elixir
+defmodule PartB do
+  @mapping [
+    {"1", 1},
+    {"2", 2},
+    {"3", 3},
+    {"4", 4},
+    {"5", 5},
+    {"6", 6},
+    {"7", 7},
+    {"8", 8},
+    {"9", 9},
+    {"one", 1},
+    {"two", 2},
+    {"three", 3},
+    {"four", 4},
+    {"five", 5},
+    {"six", 6},
+    {"seven", 7},
+    {"eight", 8},
+    {"nine", 9}
+  ]
+
+  def solve(input) do
+    input
+    |> String.split("\n")
+    |> Enum.map(&digit/1)
+    |> Enum.map(&Enum.filter(&1, fn char -> is_integer(char) end))
+    |> Enum.map(&(List.first(&1) * 10 + List.last(&1)))
+    |> Enum.sum()
+  end
+
+  defp digit(str, acc \\ [])
+  defp digit(str, acc) when is_nil(str) or str == "", do: acc
+
+  defp digit(str, acc) do
+    output =
+      for {digit, value} <- @mapping, String.starts_with?(str, digit) do
+        {_discard, rest} = String.next_codepoint(str)
+        [value, rest]
+      end
+
+    if Enum.empty?(output) do
+      {discard, rest} = String.next_codepoint(str)
+      digit(rest, Enum.concat(acc, [discard]))
+    else
+      [[discard, rest]] = output
+      digit(rest, Enum.concat(acc, [discard]))
+    end
+  end
+end
+```
+
+```elixir
+PartB.solve(input_p2t)
+```
+
+```elixir
+PartB.solve(input)
+```
+
+<!-- livebook:{"offset":2397,"stamp":{"token":"XCP.FY5GL_KaC091q80Qz35RMc6HxpFPBAaMWD48Mxw7hDzqOKHO81eZynioCGrmRLQzu28ZkF73Cgye5nxiq8INRTkH51_i7CwCBO3_UA","version":2}} -->
