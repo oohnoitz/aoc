@@ -22,27 +22,27 @@ fn part_2(input: &str) -> u32 {
         .lines()
         .map(|line: &str| {
             let mut x = line.chars();
-            let mut f = None;
-            let mut l = None;
+            let mut digit_1 = None;
+            let mut digit_2 = None;
 
             while x.as_str() != "" {
-                let b = x.as_str();
-                let a = x.next().unwrap();
+                let string = x.as_str();
+                let char = x.next().unwrap();
 
-                if a.is_ascii_digit() {
-                    f = f.or(a.to_digit(10));
-                    l = a.to_digit(10);
+                if char.is_ascii_digit() {
+                    digit_1 = digit_1.or(char.to_digit(10));
+                    digit_2 = char.to_digit(10);
                 } else {
                     for (idx, str) in MAPPING.iter().enumerate() {
-                        if b.starts_with(str) {
-                            l = Some(idx as u32 + 1);
-                            f = f.or(l);
+                        if string.starts_with(str) {
+                            digit_2 = Some(idx as u32 + 1);
+                            digit_1 = digit_1.or(digit_2);
                         }
                     }
                 }
             }
 
-            f.unwrap() * 10 + l.unwrap()
+            digit_1.unwrap() * 10 + digit_2.unwrap()
         })
         .sum()
 }
@@ -72,7 +72,7 @@ mod tests {
     }
 
     #[test]
-    fn test_part_1() {
+    fn test_part_2() {
         let input = fs::read_to_string("../input/day01.txt").expect("Missing");
         assert_eq!(day01::part_2(&input), 56324);
     }
