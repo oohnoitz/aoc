@@ -30,8 +30,8 @@ fn part_2(input: &str) -> u32 {
                 let char = x.next().unwrap();
 
                 if char.is_ascii_digit() {
-                    digit_1 = digit_1.or(char.to_digit(10));
                     digit_2 = char.to_digit(10);
+                    digit_1 = digit_1.or(digit_2);
                 } else {
                     for (idx, str) in MAPPING.iter().enumerate() {
                         if string.starts_with(str) {
