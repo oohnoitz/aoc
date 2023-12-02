@@ -98,14 +98,33 @@ defmodule PartB do
     |> Enum.sum()
   end
 
-  def digit(input, acc \\ []) do
+  def solve_match(input) do
+    input
+    |> String.split("\n")
+    |> Enum.map(&digit_match/1)
+    |> Enum.map(fn {x, y} -> x * 10 + y end)
+    |> Enum.sum()
+  end
+
+  defp digit(input, acc \\ []) do
     case String.next_codepoint(input) do
       nil -> acc
       {_discard, string} -> digit(string, Enum.concat(acc, digit_mapping(input)))
     end
   end
 
-  def digit_mapping(string) do
+  defp digit_match(input, acc \\ {0, 0}) do
+    case String.next_codepoint(input) do
+      nil -> acc
+      {_discard, string} -> digit_match(string, digit_matcher(digit_mapping(input), acc))
+    end
+  end
+
+  defp digit_matcher([], acc), do: acc
+  defp digit_matcher([num], {0, 0}), do: {num, num}
+  defp digit_matcher([num], {x, _y}), do: {x, num}
+
+  defp digit_mapping(string) do
     for {digit, value} <- @mapping, String.starts_with?(string, digit) do
       value
     end
@@ -114,11 +133,11 @@ end
 ```
 
 ```elixir
-[PartB.solve(input_p2t), PartB.solve_regex(input_p2t)]
+[PartB.solve(input_p2t), PartB.solve_regex(input_p2t), PartB.solve_match(input_p2t)]
 ```
 
 ```elixir
-[PartB.solve(input), PartB.solve_regex(input)]
+[PartB.solve(input), PartB.solve_regex(input), PartB.solve_match(input)]
 ```
 
-<!-- livebook:{"offset":2497,"stamp":{"token":"XCP.F35_credMc9FOwOvDfvl0p44hA1r7paC7_DDlOOPtH5z5w1fvEukR4x4_jCrxmIJixkZ8wD_nMaO8cItEzeJn6hPr0ODoDb_ZP98SA","version":2}} -->
+<!-- livebook:{"offset":3071,"stamp":{"token":"XCP.a1Vgw6b2xdLn3wsRvHN5IVTIHElPCYmb3_WfYJAJfjt55vyyvm5su_eEb7lKc0HMpUb6bJkzTEMi-qkJw_knrW_b2cvgje7j_wUKfA","version":2}} -->
