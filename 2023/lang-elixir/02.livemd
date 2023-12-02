@@ -1,0 +1,153 @@
+<!-- livebook:{"file_entries":[{"file":{"file_system_id":"local","file_system_type":"local","path":"/data/aoc/2023/input/day02-p1t.txt"},"name":"day02-p1t.txt","type":"file"},{"file":{"file_system_id":"local","file_system_type":"local","path":"/data/aoc/2023/input/day02.txt"},"name":"day02.txt","type":"file"}]} -->
+
+# AoC 2023 - Day 02
+
+```elixir
+Mix.install([
+  {:kino, "~> 0.11.0"}
+])
+```
+
+## Section
+
+```elixir
+input_p1t =
+  "day02-p1t.txt"
+  |> Kino.FS.file_path()
+  |> File.read!()
+  |> String.trim()
+```
+
+```elixir
+input =
+  "day02.txt"
+  |> Kino.FS.file_path()
+  |> File.read!()
+  |> String.trim()
+```
+
+```elixir
+defmodule Round do
+  defstruct red: 0, green: 0, blue: 0
+end
+
+defmodule Game do
+  defstruct id: nil, rounds: [], bag: nil, valid?: true
+end
+
+defmodule PartA do
+  def solve(input) do
+    input
+    |> String.split("\n")
+    |> Enum.reduce([], fn game, acc ->
+      [[_game, id, data]] = Regex.scan(~r/Game (\d+): (.*)/, game)
+
+      rounds =
+        data
+        |> String.split(";")
+        |> Enum.map(&parse_round/1)
+
+      valid? =
+        Enum.reduce(rounds, true, fn
+          _round, false -> false
+          round, _acc -> valid?(round)
+        end)
+
+      [%Game{id: String.to_integer(id), rounds: rounds, valid?: valid?} | acc]
+    end)
+    |> Enum.filter(& &1.valid?)
+    |> Enum.map(&Map.get(&1, :id))
+    |> Enum.sum()
+  end
+
+  def parse_round(data) do
+    ~r/(\d+) (red|green|blue)/
+    |> Regex.scan(data)
+    |> Enum.reduce(%Round{}, &parse_round_item/2)
+  end
+
+  def parse_round_item([_element, count, "red"], %Round{red: r, green: g, blue: b}) do
+    %Round{red: r + String.to_integer(count), green: g, blue: b}
+  end
+
+  def parse_round_item([_element, count, "green"], %Round{red: r, green: g, blue: b}) do
+    %Round{red: r, green: g + String.to_integer(count), blue: b}
+  end
+
+  def parse_round_item([_element, count, "blue"], %Round{red: r, green: g, blue: b}) do
+    %Round{red: r, green: g, blue: b + String.to_integer(count)}
+  end
+
+  def valid?(%Round{red: red, green: green, blue: blue})
+      when red <= 12 and green <= 13 and blue <= 14,
+      do: true
+
+  def valid?(_), do: false
+end
+```
+
+```elixir
+[PartA.solve(input_p1t), PartA.solve(input)]
+```
+
+```elixir
+defmodule Bag do
+  defstruct red: 0, green: 0, blue: 0
+end
+
+defmodule PartB do
+  def solve(input) do
+    input
+    |> String.split("\n")
+    |> Enum.reduce([], fn game, acc ->
+      [[_game, id, data]] = Regex.scan(~r/Game (\d+): (.*)/, game)
+
+      rounds =
+        data
+        |> String.split(";")
+        |> Enum.map(&parse_round/1)
+
+      bag =
+        Enum.reduce(rounds, %Bag{}, fn round, %Bag{red: r, green: g, blue: b} ->
+          %Bag{red: max(r, round.red), green: max(g, round.green), blue: max(b, round.blue)}
+        end)
+
+      [%Game{id: String.to_integer(id), rounds: rounds, bag: bag} | acc]
+    end)
+    |> Enum.map(fn %Game{bag: %Bag{red: red, green: green, blue: blue}} ->
+      red * green * blue
+    end)
+    |> Enum.sum()
+  end
+
+  def parse_round(data) do
+    ~r/(\d+) (red|green|blue)/
+    |> Regex.scan(data)
+    |> Enum.reduce(%Round{}, &parse_round_item/2)
+  end
+
+  def parse_round_item([_element, count, "red"], %Round{red: r, green: g, blue: b}) do
+    %Round{red: r + String.to_integer(count), green: g, blue: b}
+  end
+
+  def parse_round_item([_element, count, "green"], %Round{red: r, green: g, blue: b}) do
+    %Round{red: r, green: g + String.to_integer(count), blue: b}
+  end
+
+  def parse_round_item([_element, count, "blue"], %Round{red: r, green: g, blue: b}) do
+    %Round{red: r, green: g, blue: b + String.to_integer(count)}
+  end
+
+  def valid?(%Round{red: red, green: green, blue: blue})
+      when red <= 12 and green <= 13 and blue <= 14,
+      do: true
+
+  def valid?(_), do: false
+end
+```
+
+```elixir
+[PartB.solve(input_p1t), PartB.solve(input)]
+```
+
+<!-- livebook:{"offset":3804,"stamp":{"token":"XCP.Nl7BOQpAwIQOqAw7CfA31PdPuvVKm0IkuHzmsiHGRE0-f89xSkByO1sgkfvaSv1flcaHECZZE3jCOSLqI5A0N8fP7iMWzQhof0f72A","version":2}} -->
