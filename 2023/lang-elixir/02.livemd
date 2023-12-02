@@ -39,7 +39,7 @@ defmodule PartA do
   def solve(input) do
     input
     |> String.split("\n")
-    |> Enum.reduce([], fn game, acc ->
+    |> Enum.map(fn game ->
       [[_game, id, data]] = Regex.scan(~r/Game (\d+): (.*)/, game)
 
       rounds =
@@ -53,7 +53,37 @@ defmodule PartA do
           round, _acc -> valid?(round)
         end)
 
-      [%Game{id: String.to_integer(id), rounds: rounds, valid?: valid?} | acc]
+      %Game{id: String.to_integer(id), rounds: rounds, valid?: valid?}
+    end)
+    |> Enum.filter(& &1.valid?)
+    |> Enum.map(&Map.get(&1, :id))
+    |> Enum.sum()
+  end
+
+  def solve_2(input) do
+    input
+    |> String.split("\n")
+    |> Enum.map(fn line ->
+      [part_1, part_2] = String.split(line, ":")
+      {"Game ", game_id} = String.split_at(part_1, 5)
+
+      rounds =
+        part_2
+        |> String.trim()
+        |> String.split(";")
+        |> Enum.map(&parse_round_match/1)
+
+      valid? =
+        Enum.reduce(rounds, true, fn
+          _round, false -> false
+          round, _acc -> valid?(round)
+        end)
+
+      %Game{
+        id: String.to_integer(game_id),
+        rounds: rounds,
+        valid?: valid?
+      }
     end)
     |> Enum.filter(& &1.valid?)
     |> Enum.map(&Map.get(&1, :id))
@@ -64,6 +94,16 @@ defmodule PartA do
     ~r/(\d+) (red|green|blue)/
     |> Regex.scan(data)
     |> Enum.reduce(%Round{}, &parse_round_item/2)
+  end
+
+  def parse_round_match(data) do
+    data
+    |> String.split(",")
+    |> Enum.reduce(%Round{}, fn item, acc ->
+      [count, color] = item |> String.trim() |> String.split(" ")
+
+      parse_round_item([nil, count, color], acc)
+    end)
   end
 
   def parse_round_item([_element, count, "red"], %Round{red: r, green: g, blue: b}) do
@@ -87,7 +127,7 @@ end
 ```
 
 ```elixir
-[PartA.solve(input_p1t), PartA.solve(input)]
+[PartA.solve(input_p1t), PartA.solve(input), PartA.solve_2(input)]
 ```
 
 ```elixir
@@ -150,4 +190,4 @@ end
 [PartB.solve(input_p1t), PartB.solve(input)]
 ```
 
-<!-- livebook:{"offset":3804,"stamp":{"token":"XCP.Nl7BOQpAwIQOqAw7CfA31PdPuvVKm0IkuHzmsiHGRE0-f89xSkByO1sgkfvaSv1flcaHECZZE3jCOSLqI5A0N8fP7iMWzQhof0f72A","version":2}} -->
+<!-- livebook:{"offset":4715,"stamp":{"token":"XCP.Ad5RI1OMM2pl68f7qC_Zi6KF6w-PoWYMsq7-eNqe6pS8djk81W-rG6vIETQuaSe9UUf1383eu3BcSXPAGJTTZQTVXUG61tLPnTUe3w","version":2}} -->
