@@ -3,9 +3,6 @@ use std::fs;
 
 fn part_1(input: &str) -> u32 {
     let regex_game = Regex::new(r"Game (\d+): (.*)").unwrap();
-    let mut color_r: u32 = 0;
-    let mut color_g: u32 = 0;
-    let mut color_b: u32 = 0;
 
     input
         .lines()
