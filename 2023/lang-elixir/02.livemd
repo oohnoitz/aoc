@@ -27,14 +27,16 @@ input =
 ```
 
 ```elixir
-defmodule Round do
+defmodule Game do
+  defstruct id: nil, rounds: []
+end
+
+defmodule Game.Round do
   defstruct red: 0, green: 0, blue: 0
 end
+```
 
-defmodule Game do
-  defstruct id: nil, rounds: [], bag: nil, valid?: true
-end
-
+```elixir
 defmodule PartA do
   def solve(input) do
     input
@@ -42,20 +44,15 @@ defmodule PartA do
     |> Enum.map(fn game ->
       [[_game, id, data]] = Regex.scan(~r/Game (\d+): (.*)/, game)
 
-      rounds =
-        data
-        |> String.split(";")
-        |> Enum.map(&parse_round/1)
-
-      valid? =
-        Enum.reduce(rounds, true, fn
-          _round, false -> false
-          round, _acc -> valid?(round)
-        end)
-
-      %Game{id: String.to_integer(id), rounds: rounds, valid?: valid?}
+      %Game{
+        id: String.to_integer(id),
+        rounds:
+          data
+          |> String.split(";")
+          |> Enum.map(&parse_round/1)
+      }
     end)
-    |> Enum.filter(& &1.valid?)
+    |> Enum.filter(&valid?/1)
     |> Enum.map(&Map.get(&1, :id))
     |> Enum.sum()
   end
@@ -73,19 +70,12 @@ defmodule PartA do
         |> String.split(";")
         |> Enum.map(&parse_round_match/1)
 
-      valid? =
-        Enum.reduce(rounds, true, fn
-          _round, false -> false
-          round, _acc -> valid?(round)
-        end)
-
       %Game{
         id: String.to_integer(game_id),
-        rounds: rounds,
-        valid?: valid?
+        rounds: rounds
       }
     end)
-    |> Enum.filter(& &1.valid?)
+    |> Enum.filter(&valid?/1)
     |> Enum.map(&Map.get(&1, :id))
     |> Enum.sum()
   end
@@ -93,32 +83,36 @@ defmodule PartA do
   def parse_round(data) do
     ~r/(\d+) (red|green|blue)/
     |> Regex.scan(data)
-    |> Enum.reduce(%Round{}, &parse_round_item/2)
+    |> Enum.reduce(%Game.Round{}, &parse_round_item/2)
   end
 
   def parse_round_match(data) do
     data
     |> String.split(",")
-    |> Enum.reduce(%Round{}, fn item, acc ->
+    |> Enum.reduce(%Game.Round{}, fn item, acc ->
       [count, color] = item |> String.trim() |> String.split(" ")
 
       parse_round_item([nil, count, color], acc)
     end)
   end
 
-  def parse_round_item([_element, count, "red"], %Round{red: r, green: g, blue: b}) do
-    %Round{red: r + String.to_integer(count), green: g, blue: b}
+  def parse_round_item([_element, count, "red"], %Game.Round{red: r, green: g, blue: b}) do
+    %Game.Round{red: r + String.to_integer(count), green: g, blue: b}
   end
 
-  def parse_round_item([_element, count, "green"], %Round{red: r, green: g, blue: b}) do
-    %Round{red: r, green: g + String.to_integer(count), blue: b}
+  def parse_round_item([_element, count, "green"], %Game.Round{red: r, green: g, blue: b}) do
+    %Game.Round{red: r, green: g + String.to_integer(count), blue: b}
   end
 
-  def parse_round_item([_element, count, "blue"], %Round{red: r, green: g, blue: b}) do
-    %Round{red: r, green: g, blue: b + String.to_integer(count)}
+  def parse_round_item([_element, count, "blue"], %Game.Round{red: r, green: g, blue: b}) do
+    %Game.Round{red: r, green: g, blue: b + String.to_integer(count)}
   end
 
-  def valid?(%Round{red: red, green: green, blue: blue})
+  def valid?(%Game{rounds: rounds}) do
+    rounds |> Enum.map(&valid?/1) |> Enum.all?()
+  end
+
+  def valid?(%Game.Round{red: red, green: green, blue: blue})
       when red <= 12 and green <= 13 and blue <= 14,
       do: true
 
@@ -127,67 +121,52 @@ end
 ```
 
 ```elixir
-[PartA.solve(input_p1t), PartA.solve(input), PartA.solve_2(input)]
+[
+  {8, PartA.solve(input_p1t)},
+  {2265, PartA.solve(input), PartA.solve_2(input)}
+]
 ```
 
 ```elixir
-defmodule Bag do
-  defstruct red: 0, green: 0, blue: 0
-end
-
 defmodule PartB do
   def solve(input) do
     input
     |> String.split("\n")
-    |> Enum.reduce([], fn game, acc ->
-      [[_game, id, data]] = Regex.scan(~r/Game (\d+): (.*)/, game)
+    |> Enum.map(fn line ->
+      [_part_1, part_2] = String.split(line, ":")
 
-      rounds =
-        data
-        |> String.split(";")
-        |> Enum.map(&parse_round/1)
-
-      bag =
-        Enum.reduce(rounds, %Bag{}, fn round, %Bag{red: r, green: g, blue: b} ->
-          %Bag{red: max(r, round.red), green: max(g, round.green), blue: max(b, round.blue)}
-        end)
-
-      [%Game{id: String.to_integer(id), rounds: rounds, bag: bag} | acc]
+      part_2
+      |> String.trim()
+      |> String.split(";")
+      |> Enum.flat_map(&String.split(&1, ","))
+      |> Enum.map(&(&1 |> String.trim() |> String.split(" ")))
+      |> Enum.reduce({0, 0, 0}, &parse_item/2)
     end)
-    |> Enum.map(fn %Game{bag: %Bag{red: red, green: green, blue: blue}} ->
+    |> Enum.map(fn {red, green, blue} ->
       red * green * blue
     end)
     |> Enum.sum()
   end
 
-  def parse_round(data) do
-    ~r/(\d+) (red|green|blue)/
-    |> Regex.scan(data)
-    |> Enum.reduce(%Round{}, &parse_round_item/2)
+  def parse_item([count, "red"], {r, g, b}) do
+    {max(r, String.to_integer(count)), g, b}
   end
 
-  def parse_round_item([_element, count, "red"], %Round{red: r, green: g, blue: b}) do
-    %Round{red: r + String.to_integer(count), green: g, blue: b}
+  def parse_item([count, "green"], {r, g, b}) do
+    {r, max(g, String.to_integer(count)), b}
   end
 
-  def parse_round_item([_element, count, "green"], %Round{red: r, green: g, blue: b}) do
-    %Round{red: r, green: g + String.to_integer(count), blue: b}
+  def parse_item([count, "blue"], {r, g, b}) do
+    {r, g, max(b, String.to_integer(count))}
   end
-
-  def parse_round_item([_element, count, "blue"], %Round{red: r, green: g, blue: b}) do
-    %Round{red: r, green: g, blue: b + String.to_integer(count)}
-  end
-
-  def valid?(%Round{red: red, green: green, blue: blue})
-      when red <= 12 and green <= 13 and blue <= 14,
-      do: true
-
-  def valid?(_), do: false
 end
 ```
 
 ```elixir
-[PartB.solve(input_p1t), PartB.solve(input)]
+[
+  {2286, PartB.solve(input_p1t)},
+  {64097, PartB.solve(input)}
+]
 ```
 
-<!-- livebook:{"offset":4715,"stamp":{"token":"XCP.Ad5RI1OMM2pl68f7qC_Zi6KF6w-PoWYMsq7-eNqe6pS8djk81W-rG6vIETQuaSe9UUf1383eu3BcSXPAGJTTZQTVXUG61tLPnTUe3w","version":2}} -->
+<!-- livebook:{"offset":3836,"stamp":{"token":"XCP.dz88z16iNhT3jieyj1jqtapBIu8ZHJspg4PgQ6eCVtZSUs2Ge2VPKd2hJA-Bk_D5dbohhMTavfXvBK754bScDD1WUeRTvGL7V0acNQ","version":2}} -->
