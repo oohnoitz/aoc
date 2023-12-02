@@ -120,19 +120,39 @@ defmodule PartB do
   defp digit_match(input, acc \\ {0, 0}) do
     case String.next_codepoint(input) do
       nil -> acc
-      {_discard, string} -> digit_match(string, digit_matcher(digit_mapping(input), acc))
+      {_discard, string} -> digit_match(string, digit_matcher(digit_mapping_match(input), acc))
     end
   end
 
-  defp digit_matcher([], acc), do: acc
-  defp digit_matcher([num], {0, 0}), do: {num, num}
-  defp digit_matcher([num], {x, _y}), do: {x, num}
+  defp digit_matcher(nil, acc), do: acc
+  defp digit_matcher(num, {0, 0}), do: {num, num}
+  defp digit_matcher(num, {x, _y}), do: {x, num}
 
   defp digit_mapping(string) do
     for {digit, value} <- @mapping, String.starts_with?(string, digit) do
       value
     end
   end
+
+  defp digit_mapping_match("1" <> _str), do: 1
+  defp digit_mapping_match("2" <> _str), do: 2
+  defp digit_mapping_match("3" <> _str), do: 3
+  defp digit_mapping_match("4" <> _str), do: 4
+  defp digit_mapping_match("5" <> _str), do: 5
+  defp digit_mapping_match("6" <> _str), do: 6
+  defp digit_mapping_match("7" <> _str), do: 7
+  defp digit_mapping_match("8" <> _str), do: 8
+  defp digit_mapping_match("9" <> _str), do: 9
+  defp digit_mapping_match("one" <> _str), do: 1
+  defp digit_mapping_match("two" <> _str), do: 2
+  defp digit_mapping_match("three" <> _str), do: 3
+  defp digit_mapping_match("four" <> _str), do: 4
+  defp digit_mapping_match("five" <> _str), do: 5
+  defp digit_mapping_match("six" <> _str), do: 6
+  defp digit_mapping_match("seven" <> _str), do: 7
+  defp digit_mapping_match("eight" <> _str), do: 8
+  defp digit_mapping_match("nine" <> _str), do: 9
+  defp digit_mapping_match(_str), do: nil
 end
 ```
 
@@ -144,4 +164,4 @@ end
 [PartB.solve(input), PartB.solve_regex(input), PartB.solve_match(input)]
 ```
 
-<!-- livebook:{"offset":3113,"stamp":{"token":"XCP.JmhRXOGU4ndwscsqJhie6CYi4uX-tSmLWIZVf2xXqNyp_nUjIyD9PoQqV6KioCmORwMAKvZAHbyXdnLhhXvPxEgFLYvatMXdpDZfeg","version":2}} -->
+<!-- livebook:{"offset":4032,"stamp":{"token":"XCP.2lUwOZJ0rSsw4odvHXVwpUggm3sZRFY_699zsEJZXqPuRWmmtBG_qAsT28u021diqpO3vNT7UTRSANLLhA7ol7B8MrHPDe9vZaeiQw","version":2}} -->
