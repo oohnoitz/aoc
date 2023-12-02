@@ -53,27 +53,24 @@ fn part_2(input: &str) -> u32 {
             let mut color_b: u32 = 0;
 
             let re_match = regex_game.captures(line).unwrap();
-            let game = re_match.get(1).unwrap().as_str().parse::<u32>().unwrap();
-            let rounds: Vec<&str> = re_match.get(2).unwrap().as_str().split(";").collect();
-            let mut rounds_iter = rounds.into_iter();
+            let items: Vec<&str> = re_match
+                .get(2)
+                .unwrap()
+                .as_str()
+                .split(";")
+                .flat_map(|s| s.trim().split_whitespace())
+                .collect();
 
-            while let Some(round) = rounds_iter.next() {
-                let items: Vec<&str> = round.trim().split_whitespace().collect();
-                let mut items_iter = items.into_iter();
+            let mut items_iter = items.into_iter();
+            while let Some(count) = items_iter.next() {
+                let total = count.parse::<u32>().unwrap();
+                let color = items_iter.next().unwrap().trim_end_matches(",");
 
-                while let Some(count) = items_iter.next() {
-                    let total = count.parse::<u32>().unwrap();
-                    let color = items_iter.next().unwrap().trim_end_matches(",");
-
-                    if color == "red" {
-                        color_r = color_r.max(total);
-                    }
-                    if color == "green" {
-                        color_g = color_g.max(total);
-                    }
-                    if color == "blue" {
-                        color_b = color_b.max(total);
-                    }
+                match color {
+                    "red" => color_r = color_r.max(total),
+                    "green" => color_g = color_g.max(total),
+                    "blue" => color_b = color_b.max(total),
+                    _ => {}
                 }
             }
 
