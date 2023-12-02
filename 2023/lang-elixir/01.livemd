@@ -93,8 +93,12 @@ defmodule PartB do
     input
     |> String.split("\n")
     |> Enum.map(&Regex.scan(~r/(?=(\d|one|two|three|four|five|six|seven|eight|nine))/, &1))
-    |> Enum.map(&Enum.map(&1, fn [_a, b] -> Map.get(@mapping, b) end))
-    |> Enum.map(&(List.first(&1) * 10 + List.last(&1)))
+    |> Enum.map(fn line ->
+      [_discard, a] = List.first(line)
+      [_discard, b] = List.last(line)
+
+      Map.get(@mapping, a) * 10 + Map.get(@mapping, b)
+    end)
     |> Enum.sum()
   end
 
@@ -140,4 +144,4 @@ end
 [PartB.solve(input), PartB.solve_regex(input), PartB.solve_match(input)]
 ```
 
-<!-- livebook:{"offset":3071,"stamp":{"token":"XCP.a1Vgw6b2xdLn3wsRvHN5IVTIHElPCYmb3_WfYJAJfjt55vyyvm5su_eEb7lKc0HMpUb6bJkzTEMi-qkJw_knrW_b2cvgje7j_wUKfA","version":2}} -->
+<!-- livebook:{"offset":3113,"stamp":{"token":"XCP.JmhRXOGU4ndwscsqJhie6CYi4uX-tSmLWIZVf2xXqNyp_nUjIyD9PoQqV6KioCmORwMAKvZAHbyXdnLhhXvPxEgFLYvatMXdpDZfeg","version":2}} -->
