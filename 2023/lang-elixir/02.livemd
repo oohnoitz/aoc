@@ -148,6 +148,25 @@ defmodule PartB do
     |> Enum.sum()
   end
 
+  def solve_2(input) do
+    input
+    |> String.split("\n")
+    |> Enum.map(fn line ->
+      [_part_1, part_2] = String.split(line, ":")
+
+      part_2
+      |> String.trim()
+      |> String.replace(~r/(;\s|,\s)/, " ")
+      |> String.split(" ")
+      |> Enum.chunk_every(2)
+      |> Enum.reduce({0, 0, 0}, &parse_item/2)
+    end)
+    |> Enum.map(fn {red, green, blue} ->
+      red * green * blue
+    end)
+    |> Enum.sum()
+  end
+
   def parse_item([count, "red"], {r, g, b}) do
     {max(r, String.to_integer(count)), g, b}
   end
@@ -165,8 +184,8 @@ end
 ```elixir
 [
   {2286, PartB.solve(input_p1t)},
-  {64097, PartB.solve(input)}
+  {64097, PartB.solve(input), PartB.solve_2(input)}
 ]
 ```
 
-<!-- livebook:{"offset":3836,"stamp":{"token":"XCP.dz88z16iNhT3jieyj1jqtapBIu8ZHJspg4PgQ6eCVtZSUs2Ge2VPKd2hJA-Bk_D5dbohhMTavfXvBK754bScDD1WUeRTvGL7V0acNQ","version":2}} -->
+<!-- livebook:{"offset":4288,"stamp":{"token":"XCP.x3lOGq4Ea8ZuenrU1H11M3WqbWkBkctl4WUDSxKJ8b-Y1iQ1_vriIXvpCEicIxIcD0PLGN1-GA2UlsFFRDHQG2f_wLOBhoXHUIEHuw","version":2}} -->
