@@ -1,0 +1,150 @@
+<!-- livebook:{"file_entries":[{"file":{"file_system_id":"local","file_system_type":"local","path":"/data/aoc/2023/input/day03-e1.txt"},"name":"day03-e1.txt","type":"file"},{"file":{"file_system_id":"local","file_system_type":"local","path":"/data/aoc/2023/input/day03.txt"},"name":"day03.txt","type":"file"}]} -->
+
+# AoC 2023 - Day 03
+
+```elixir
+Mix.install([
+  {:kino, "~> 0.11.3"}
+])
+```
+
+## Section
+
+```elixir
+input_e1 =
+  "day03-e1.txt"
+  |> Kino.FS.file_path()
+  |> File.read!()
+  |> String.trim()
+
+input =
+  "day03.txt"
+  |> Kino.FS.file_path()
+  |> File.read!()
+  |> String.trim()
+
+[input_e1, input]
+```
+
+```elixir
+defmodule Data do
+  defstruct grid: [], symbols: [], numbers: []
+end
+
+defmodule Solution do
+  @neighbors [{-1, -1}, {0, -1}, {1, -1}, {-1, 0}, {1, 0}, {1, 1}, {0, 1}, {-1, 1}]
+
+  def parse(input) do
+    input
+    |> String.split("\n")
+    |> Enum.with_index()
+    |> Enum.reduce(%Data{}, fn {line, y},
+                               %Data{
+                                 grid: grid,
+                                 symbols: symbols,
+                                 numbers: numbers
+                               } ->
+      xy =
+        line
+        |> String.codepoints()
+        |> Enum.with_index()
+
+      symbol_coords =
+        xy
+        |> Enum.filter(fn {char, _x} -> is_symbol?(char) end)
+        |> Enum.map(fn {_char, x} -> {x, y} end)
+
+      number_coords =
+        xy
+        |> Enum.filter(fn {char, _x} -> is_digit?(char) end)
+        |> Enum.map(fn {_char, x} -> {x, y} end)
+
+      %Data{
+        grid: Enum.concat(grid, [line]),
+        symbols: Enum.concat(symbols, symbol_coords),
+        numbers: Enum.concat(numbers, number_coords)
+      }
+    end)
+  end
+
+  def part_1(input) do
+    data = parse(input)
+
+    data.symbols
+    |> Enum.reduce(MapSet.new(), fn coords, acc ->
+      adjacent_coords = adjacent_coords(coords, data.numbers)
+
+      Enum.reduce(adjacent_coords, acc, fn {x, y}, acc ->
+        MapSet.put(acc, collect_numbers(Enum.at(data.grid, y), x, y))
+      end)
+    end)
+    |> Enum.map(fn {n, _, _} -> n end)
+    |> Enum.sum()
+  end
+
+  def part_2(input) do
+    data = parse(input)
+
+    data.symbols
+    |> Enum.reduce(0, fn coords, acc ->
+      adjacent_coords = adjacent_coords(coords, data.numbers)
+
+      numbers =
+        Enum.reduce(adjacent_coords, MapSet.new(), fn {x, y}, acc ->
+          MapSet.put(acc, collect_numbers(Enum.at(data.grid, y), x, y))
+        end)
+
+      case MapSet.size(numbers) do
+        2 -> acc + (numbers |> Enum.map(fn {n, _, _} -> n end) |> Enum.product())
+        _ -> acc
+      end
+    end)
+  end
+
+  def collect_numbers(line, x, y) do
+    {a, b} = {collect_numbers_directional(line, x, -1), collect_numbers_directional(line, x)}
+    number = line |> String.slice(a, b - a + 1) |> String.to_integer()
+
+    {number, {a, y}, {b, y}}
+  end
+
+  def collect_numbers_directional(line, x, direction \\ 1) do
+    with char when char in ~w(1 2 3 4 5 6 7 8 9 0) <- String.at(line, x),
+         pos <- x + direction,
+         char when not is_nil(char) <- String.at(line, pos),
+         {_digit, _discard} <- Integer.parse(char) do
+      collect_numbers_directional(line, x + direction, direction)
+    else
+      _ -> x
+    end
+  end
+
+  defp adjacent_coords({symbol_x, symbol_y}, number_coords) do
+    Enum.reduce(@neighbors, [], fn {x, y}, acc ->
+      new_x = symbol_x + x
+      new_y = symbol_y + y
+
+      if Enum.member?(number_coords, {new_x, new_y}) do
+        [{new_x, new_y} | acc]
+      else
+        acc
+      end
+    end)
+  end
+
+  defp is_digit?(char) when char in ~w(1 2 3 4 5 6 7 8 9 0), do: true
+  defp is_digit?(_char), do: false
+  defp is_symbol?(char) when char not in ~w(1 2 3 4 5 6 7 8 9 0 .), do: true
+  defp is_symbol?(_char), do: false
+end
+```
+
+```elixir
+Solution.part_1(input)
+```
+
+```elixir
+Solution.part_2(input)
+```
+
+<!-- livebook:{"offset":3824,"stamp":{"token":"XCP.sCTOlFyvZD_XA_kNiF_nHm5fiORVgSAZX1MMvN95gbV-3HfdOYta1TVDkft3_IXmJXzUuILBpyYkxihm_KI42H34ZcNp2kAyXIOGBw","version":2}} -->
