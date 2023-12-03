@@ -69,10 +69,10 @@ class Day02
 
     public static function parseRounds(string $input): array
     {
-            $rounds = trim(string: $input);
-            $rounds = explode(string: $rounds, separator: ';');
+        $rounds = trim(string: $input);
+        $rounds = explode(string: $rounds, separator: ';');
 
-            return array_map(array: $rounds, callback: fn ($round) => explode(string: trim($round), separator: ','));
+        return array_map(array: $rounds, callback: fn ($round) => explode(string: trim($round), separator: ','));
     }
 }
 
