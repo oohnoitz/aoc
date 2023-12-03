@@ -8,18 +8,18 @@ class Day02
         $output = 0;
 
         foreach ($lines as $line) {
-            $line_split = explode(string: $line, separator: ':');
-            $game_id = intval(substr(string: $line_split[0] ?? '', offset: 5));
+            [$part_1, $part_2] = explode(string: $line, separator: ':');
+            $game_id = intval(substr(string: $part_1, offset: 5));
             $invalid = false;
 
-            $rounds = self::parseRounds($line_split[1] ?? '');
+            $rounds = self::parseRounds($part_2);
 
             foreach ($rounds as $round) {
                 $options = array_map(array: $round, callback: fn ($option) => explode(string: trim($option), separator: ' '));
 
                 foreach ($options as $option) {
-                    $count = intval($option[0]);
-                    $color = $option[1];
+                    [$count, $color] = $option;
+                    $count = intval($count);
 
                     $invalid = match (true) {
                         $color === 'red' && $count > 12 => true,
@@ -44,23 +44,24 @@ class Day02
         $output = 0;
 
         foreach ($lines as $line) {
-            $line_split = explode(string: $line, separator: ':');
+            [, $part_2] = explode(string: $line, separator: ':');
             $min_values = ['red' => 0, 'green' => 0, 'blue' => 0];
 
-            $rounds = self::parseRounds($line_split[1] ?? '');
+            $rounds = self::parseRounds($part_2);
 
             foreach ($rounds as $round) {
                 $options = array_map(array: $round, callback: fn ($option) => explode(string: trim($option), separator: ' '));
 
                 foreach ($options as $option) {
+                    [$count, $color] = $option;
                     $count = intval($option[0]);
-                    $color = $option[1];
 
                     $min_values[ $color ] = max($min_values[ $color ], intval($count));
                 }
             }
 
-            $output += ($min_values['red'] * $min_values['green'] * $min_values['blue']);
+            ['red' => $r, 'green' => $g, 'blue' => $b] = $min_values;
+            $output += ($r * $g * $b);
         }
 
         return $output;
