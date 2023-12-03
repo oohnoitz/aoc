@@ -12,9 +12,7 @@ class Day02
             $game_id = intval(substr(string: $line_split[0] ?? '', offset: 5));
             $invalid = false;
 
-            $rounds = trim(string: $line_split[1] ?? '');
-            $rounds = explode(string: $rounds, separator: ';');
-            $rounds = array_map(array: $rounds, callback: fn ($round) => explode(string: trim($round), separator: ','));
+            $rounds = self::parseRounds($line_split[1] ?? '');
 
             foreach ($rounds as $round) {
                 $options = array_map(array: $round, callback: fn ($option) => explode(string: trim($option), separator: ' '));
@@ -49,9 +47,7 @@ class Day02
             $line_split = explode(string: $line, separator: ':');
             $min_values = ['red' => 0, 'green' => 0, 'blue' => 0];
 
-            $rounds = trim(string: $line_split[1] ?? '');
-            $rounds = explode(string: $rounds, separator: ';');
-            $rounds = array_map(array: $rounds, callback: fn ($round) => explode(string: trim($round), separator: ','));
+            $rounds = self::parseRounds($line_split[1] ?? '');
 
             foreach ($rounds as $round) {
                 $options = array_map(array: $round, callback: fn ($option) => explode(string: trim($option), separator: ' '));
@@ -68,6 +64,14 @@ class Day02
         }
 
         return $output;
+    }
+
+    public static function parseRounds(string $input): array
+    {
+            $rounds = trim(string: $input);
+            $rounds = explode(string: $rounds, separator: ';');
+
+            return array_map(array: $rounds, callback: fn ($round) => explode(string: trim($round), separator: ','));
     }
 }
 
