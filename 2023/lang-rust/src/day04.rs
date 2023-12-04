@@ -24,44 +24,27 @@ fn part_1(input: &str) -> u32 {
 }
 
 fn part_2(input: &str) -> u32 {
-    let mut cards: Vec<Vec<usize>> = Vec::new();
-    let mut total: u32 = 0;
+    let mut cards = vec![1; input.lines().count()];
 
     for (n, line) in input.lines().enumerate() {
         let mut data = line.split(": ").nth(1).unwrap().split(" | ");
         let mut numbers = data.next().unwrap().split_ascii_whitespace();
         let winning: Vec<&str> = data.next().unwrap().split_ascii_whitespace().collect();
 
-        let mut card: Vec<usize> = Vec::new();
-        let mut t = 0;
+        let mut cards_won = 0;
 
         while let Some(number) = numbers.next() {
             if winning.contains(&number) {
-                t += 1;
-                card.push(n + t);
+                cards_won += 1;
             }
         }
 
-        cards.push(card)
-    }
-
-    for (n, _card) in input.lines().enumerate() {
-        total = total_winnings(&mut (total + 1), cards.clone(), n);
-    }
-
-    total
-}
-
-fn total_winnings(total: &mut u32, cards: Vec<Vec<usize>>, n: usize) -> u32 {
-    let winnings = &cards[n];
-
-    if winnings.len() > 0 {
-        for i in winnings {
-            *total = total_winnings(&mut (*total + 1), cards.clone(), *i);
+        for x in (n + 1)..=(cards_won + n) {
+            cards[x] += cards[n];
         }
     }
 
-    *total
+    cards.iter().sum()
 }
 
 pub fn solve() {
