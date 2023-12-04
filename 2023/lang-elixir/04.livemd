@@ -1,0 +1,89 @@
+<!-- livebook:{"file_entries":[{"file":{"file_system_id":"local","file_system_type":"local","path":"/data/aoc/2023/input/day04-e1.txt"},"name":"day04-e1.txt","type":"file"},{"file":{"file_system_id":"local","file_system_type":"local","path":"/data/aoc/2023/input/day04.txt"},"name":"day04.txt","type":"file"}]} -->
+
+# AoC 2023 - Day 04
+
+```elixir
+Mix.install([
+  {:kino, "~> 0.11.3"}
+])
+```
+
+## Section
+
+```elixir
+input_e1 =
+  "day04-e1.txt"
+  |> Kino.FS.file_path()
+  |> File.read!()
+  |> String.trim()
+
+input =
+  "day04.txt"
+  |> Kino.FS.file_path()
+  |> File.read!()
+  |> String.trim()
+
+[input_e1, input]
+```
+
+```elixir
+defmodule Solution do
+  def part_1(input) do
+    input
+    |> String.split("\n")
+    |> Enum.map(fn card ->
+      [numbers, winning_numbers] = split(card)
+
+      Enum.reduce(numbers, 0, fn number, acc ->
+        calculate_points(acc, Enum.member?(winning_numbers, number))
+      end)
+    end)
+    |> Enum.sum()
+  end
+
+  def part_2(input) do
+    lines = String.split(input, "\n")
+    cards = List.duplicate(1, length(lines))
+
+    lines
+    |> Enum.with_index()
+    |> Enum.reduce(cards, fn {card, n}, acc ->
+      [numbers, winning_numbers] = split(card)
+
+      cards_won =
+        Enum.reduce(numbers, 0, fn number, x ->
+          if Enum.member?(winning_numbers, number), do: x + 1, else: x
+        end)
+
+      range = (n + 1)..(cards_won + n)//1
+
+      Enum.reduce(range, acc, fn i, acc ->
+        List.update_at(acc, i, &(&1 + Enum.at(acc, n)))
+      end)
+    end)
+    |> Enum.sum()
+  end
+
+  defp calculate_points(0, true), do: 1
+  defp calculate_points(p, true), do: p * 2
+  defp calculate_points(p, false), do: p
+
+  defp split(line) do
+    [_card, card] = String.split(line, ":", trim: true)
+
+    card
+    |> String.split("|", trim: true)
+    |> Enum.map(&String.split(&1, " ", trim: true))
+  end
+end
+```
+
+```elixir
+Solution.part_1(input)
+```
+
+```elixir
+Solution.part_2(input)
+```
+
+<!-- livebook:{"offset":1909,"stamp":{"token":"XCP.jiHvsZ9JMwLIdHIqDtmlLk8C13wMiS3qTh5AcL0PkV6Dvw1QP9RLiEKZpF5XPErXVDuucQy_bIyMFzHHEN6wUxE5WaCpz1tp88eKcA","version":2}} -->
