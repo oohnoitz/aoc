@@ -1,0 +1,109 @@
+<!-- livebook:{"file_entries":[{"file":{"file_system_id":"local","file_system_type":"local","path":"/data/aoc/2023/input/day05-e1.txt"},"name":"day05-e1.txt","type":"file"},{"file":{"file_system_id":"local","file_system_type":"local","path":"/data/aoc/2023/input/day05.txt"},"name":"day05.txt","type":"file"}]} -->
+
+# AoC 2023 - Day 05
+
+```elixir
+Mix.install([
+  {:kino, "~> 0.11.3"}
+])
+```
+
+## Section
+
+```elixir
+input_e1 =
+  "day05-e1.txt"
+  |> Kino.FS.file_path()
+  |> File.read!()
+  |> String.trim()
+
+input =
+  "day05.txt"
+  |> Kino.FS.file_path()
+  |> File.read!()
+  |> String.trim()
+
+[input_e1, input]
+```
+
+```elixir
+defmodule Solution do
+  def part_1(input) do
+    [seeds, maps] = parse(input)
+
+    seeds =
+      seeds
+      |> String.split(":")
+      |> List.last()
+      |> String.split(" ", trim: true)
+      |> Enum.map(&String.to_integer/1)
+
+    Enum.map(seeds, fn seed ->
+      Enum.reduce(maps, seed, fn map, n ->
+        match(n, map)
+      end)
+    end)
+    |> Enum.min()
+  end
+
+  def part_2(input) do
+    [seeds, maps] = parse(input)
+
+    seeds =
+      seeds
+      |> String.split(":")
+      |> List.last()
+      |> String.split(" ", trim: true)
+      |> Enum.map(&String.to_integer/1)
+      |> Enum.chunk_every(2)
+      |> Enum.map(fn [a, b] -> a..(a + b - 1)//1 end)
+      |> Enum.map(&Range.to_list/1)
+      |> List.flatten()
+
+    Enum.map(seeds, fn seed ->
+      Enum.reduce(maps, seed, fn map, n ->
+        match(n, map)
+      end)
+    end)
+    |> Enum.min()
+  end
+
+  def parse(input) do
+    [seeds | maps] = input |> String.split("\n\n")
+
+    maps =
+      Enum.map(maps, fn map ->
+        map |> String.split("\n") |> Enum.drop(1) |> Enum.map(&build_range/1)
+      end)
+
+    [seeds, maps]
+  end
+
+  defp match(int, map) do
+    Enum.find_value(map, int, fn {src1.._ = src, dst1.._} ->
+      if int in src do
+        dst1 + int - src1
+      end
+    end)
+  end
+
+  defp build_range(string) do
+    [dst, src, len] = string |> String.split(" ") |> Enum.map(&String.to_integer/1)
+    {src..(src + len - 1)//1, dst..(dst + len - 1)//1}
+  end
+end
+```
+
+```elixir
+Solution.parse(input)
+```
+
+```elixir
+Solution.part_1(input_e1)
+```
+
+```elixir
+Solution.part_2(input_e1)
+```
+
+<!-- livebook:{"offset":2183,"stamp":{"token":"XCP.dFPpavAokcrjERR0on82cx1yY0-q_EYxDkl-4xYoUo9TxcYC1r9NnDEa9QD4t_wJw4WX8_HVEoPeRTWefjNIwB_isPyiljGDS6eT4w","version":2}} -->
