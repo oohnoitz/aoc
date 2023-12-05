@@ -34,9 +34,16 @@ defmodule Solution do
     |> Enum.map(fn card ->
       [numbers, winning_numbers] = split(card)
 
-      Enum.reduce(numbers, 0, fn number, acc ->
-        calculate_points(acc, Enum.member?(winning_numbers, number))
-      end)
+      matches =
+        numbers
+        |> MapSet.intersection(winning_numbers)
+        |> MapSet.size()
+
+      if matches > 0 do
+        round(:math.pow(2, matches - 1))
+      else
+        0
+      end
     end)
     |> Enum.sum()
   end
@@ -51,9 +58,9 @@ defmodule Solution do
       [numbers, winning_numbers] = split(card)
 
       cards_won =
-        Enum.reduce(numbers, 0, fn number, x ->
-          if Enum.member?(winning_numbers, number), do: x + 1, else: x
-        end)
+        numbers
+        |> MapSet.intersection(winning_numbers)
+        |> MapSet.size()
 
       range = (n + 1)..(cards_won + n)//1
 
@@ -64,16 +71,13 @@ defmodule Solution do
     |> Enum.sum()
   end
 
-  defp calculate_points(0, true), do: 1
-  defp calculate_points(p, true), do: p * 2
-  defp calculate_points(p, false), do: p
-
   defp split(line) do
     [_card, card] = String.split(line, ":", trim: true)
 
     card
     |> String.split("|", trim: true)
     |> Enum.map(&String.split(&1, " ", trim: true))
+    |> Enum.map(&MapSet.new/1)
   end
 end
 ```
@@ -86,4 +90,4 @@ Solution.part_1(input)
 Solution.part_2(input)
 ```
 
-<!-- livebook:{"offset":1909,"stamp":{"token":"XCP.jiHvsZ9JMwLIdHIqDtmlLk8C13wMiS3qTh5AcL0PkV6Dvw1QP9RLiEKZpF5XPErXVDuucQy_bIyMFzHHEN6wUxE5WaCpz1tp88eKcA","version":2}} -->
+<!-- livebook:{"offset":1845,"stamp":{"token":"XCP.bHSEuw_nHywCHqlSSlPBLnfqS4bglrFF0YgcOWd0HfnF8Ie7peBLtSDdal75etJXdpruydcXN_njXr3TzGUNAt3CmF1xrSNU4F0XLg","version":2}} -->
