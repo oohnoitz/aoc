@@ -53,6 +53,14 @@ class Day04
         return array_sum($cards);
     }
 
+    /**
+     * Reimplement `range` as it does not behave the same as other languages.
+     * For example, 100..99//1 will return [100, 99] instead of [].
+     *
+     * @param  int $start Start.
+     * @param  int $end   End.
+     * @return array
+     */
     public static function range(int $start, int $end): array
     {
         $results = [];
