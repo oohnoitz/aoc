@@ -1,0 +1,80 @@
+<!-- livebook:{"file_entries":[{"file":{"file_system_id":"local","file_system_type":"local","path":"/data/aoc/2023/input/day06-e1.txt"},"name":"day06-e1.txt","type":"file"},{"file":{"file_system_id":"local","file_system_type":"local","path":"/data/aoc/2023/input/day06.txt"},"name":"day06.txt","type":"file"}]} -->
+
+# AoC 2023 - Day 06
+
+```elixir
+Mix.install([
+  {:kino, "~> 0.11.3"}
+])
+```
+
+## Section
+
+```elixir
+input_e1 =
+  "day06-e1.txt"
+  |> Kino.FS.file_path()
+  |> File.read!()
+  |> String.trim()
+
+input =
+  "day06.txt"
+  |> Kino.FS.file_path()
+  |> File.read!()
+  |> String.trim()
+
+[input_e1, input]
+```
+
+```elixir
+defmodule Solution do
+  def part_1(input) do
+    input
+    |> parse()
+    |> Enum.map(fn {time, dist} ->
+      time
+      |> multi()
+      |> Enum.filter(&(&1 > dist))
+      |> length()
+    end)
+    |> Enum.product()
+  end
+
+  def part_2(input) do
+    ["Time:" <> times, "Distance:" <> distances] = String.split(input, "\n")
+
+    time = times |> String.replace(" ", "") |> String.to_integer()
+    dist = distances |> String.replace(" ", "") |> String.to_integer()
+
+    time
+    |> multi()
+    |> Enum.filter(&(&1 > dist))
+    |> length()
+  end
+
+  def multi(time) do
+    time..0
+    |> Range.to_list()
+    |> Enum.map(&(&1 * (time - &1)))
+  end
+
+  defp parse(input) do
+    ["Time:" <> times, "Distance:" <> distances] = String.split(input, "\n")
+
+    Enum.zip(
+      times |> String.split(" ", trim: true) |> Enum.map(&String.to_integer/1),
+      distances |> String.split(" ", trim: true) |> Enum.map(&String.to_integer/1)
+    )
+  end
+end
+```
+
+```elixir
+Solution.part_1(input)
+```
+
+```elixir
+Solution.part_2(input)
+```
+
+<!-- livebook:{"offset":1641,"stamp":{"token":"XCP.VYanl-UihoMj9deGFNWTcnIkK8vNggq3nwNm33ZR1k7iAGX-5Z8VLZe_-EPrW_dvsZDKLp2xglguJ5ZyrLFbCdgDBPKK_owkOxGSkA","version":2}} -->
