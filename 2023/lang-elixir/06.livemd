@@ -37,6 +37,15 @@ defmodule Solution do
     |> Enum.product()
   end
 
+  def part_1_math(input) do
+    input
+    |> parse()
+    |> Enum.map(fn {time, dist} ->
+      math(time, dist)
+    end)
+    |> Enum.product()
+  end
+
   def part_2(input) do
     ["Time:" <> times, "Distance:" <> distances] = String.split(input, "\n")
 
@@ -44,6 +53,15 @@ defmodule Solution do
     dist = distances |> String.replace(" ", "") |> String.to_integer()
 
     calc(time, dist)
+  end
+
+  def part_2_math(input) do
+    ["Time:" <> times, "Distance:" <> distances] = String.split(input, "\n")
+
+    time = times |> String.replace(" ", "") |> String.to_integer()
+    dist = distances |> String.replace(" ", "") |> String.to_integer()
+
+    math(time, dist)
   end
 
   def calc(time, dist) do
@@ -58,6 +76,14 @@ defmodule Solution do
     |> Kernel.-(even)
   end
 
+  def math(time, dist) do
+    sqrt = :math.sqrt(time * time - 4 * dist)
+    x1 = (time - sqrt) / 2
+    x2 = (time + sqrt) / 2
+
+    abs(floor(x2) - ceil(x1)) + 1
+  end
+
   defp parse(input) do
     ["Time:" <> times, "Distance:" <> distances] = String.split(input, "\n")
 
@@ -70,7 +96,15 @@ end
 ```
 
 ```elixir
-Solution.part_1(input_e1)
+Solution.math(7, 9)
+```
+
+```elixir
+Solution.part_1(input)
+```
+
+```elixir
+Solution.part_1_math(input)
 ```
 
 ```elixir
@@ -78,7 +112,11 @@ Solution.part_2(input)
 ```
 
 ```elixir
+Solution.part_2_math(input)
+```
+
+```elixir
 rem(7, 2)
 ```
 
-<!-- livebook:{"offset":1724,"stamp":{"token":"XCP.meHvYac2qk4UfLILHu71rThUOJ2b9cCOOaaXEA2ZfnFhljOX2miP1C3rrCXmicAQ_aXJ4apFBVfC3pg2cB5ciaZfWhPIPIHXCsRKGg","version":2}} -->
+<!-- livebook:{"offset":2432,"stamp":{"token":"XCP.GeY-s-9d4CbJzj4a2TGZSE1FSlUBKOizoMJJboT_-TFr4QoDv6b_KD4NppsfXqVi_-8XMWMFbFOq_oTdlpB5jWH3kKDT_gvoqd4hLg","version":2}} -->
