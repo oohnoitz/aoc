@@ -32,10 +32,7 @@ defmodule Solution do
     input
     |> parse()
     |> Enum.map(fn {time, dist} ->
-      time
-      |> multi()
-      |> Enum.filter(&(&1 > dist))
-      |> length()
+      calc(time, dist)
     end)
     |> Enum.product()
   end
@@ -46,16 +43,19 @@ defmodule Solution do
     time = times |> String.replace(" ", "") |> String.to_integer()
     dist = distances |> String.replace(" ", "") |> String.to_integer()
 
-    time
-    |> multi()
-    |> Enum.filter(&(&1 > dist))
-    |> length()
+    calc(time, dist)
   end
 
-  def multi(time) do
-    time..0
-    |> Range.to_list()
+  def calc(time, dist) do
+    even = if rem(time, 2) == 0, do: 1, else: 0
+
+    (time - 1)..div(time, 2)
     |> Enum.map(&(&1 * (time - &1)))
+    |> Enum.filter(&(&1 > dist))
+    |> Enum.uniq()
+    |> Enum.count()
+    |> Kernel.*(2)
+    |> Kernel.-(even)
   end
 
   defp parse(input) do
@@ -70,11 +70,15 @@ end
 ```
 
 ```elixir
-Solution.part_1(input)
+Solution.part_1(input_e1)
 ```
 
 ```elixir
 Solution.part_2(input)
 ```
 
-<!-- livebook:{"offset":1641,"stamp":{"token":"XCP.VYanl-UihoMj9deGFNWTcnIkK8vNggq3nwNm33ZR1k7iAGX-5Z8VLZe_-EPrW_dvsZDKLp2xglguJ5ZyrLFbCdgDBPKK_owkOxGSkA","version":2}} -->
+```elixir
+rem(7, 2)
+```
+
+<!-- livebook:{"offset":1720,"stamp":{"token":"XCP.jxBIVHixTnRnZKF5ssC7T9yJh-l4CJUFUzZa3P2iXY3bTHAWdbapCN7s8MqUncztZqlIejXeMDm55GiQWnxFqtI76eQ6y3sjEeC-RA","version":2}} -->
