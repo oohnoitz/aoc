@@ -31,65 +31,91 @@ defmodule Solution do
   def part_1(input) do
     [seeds, maps] = parse(input)
 
-    seeds =
-      seeds
-      |> String.split(":")
-      |> List.last()
-      |> String.split(" ", trim: true)
-      |> Enum.map(&String.to_integer/1)
-
     Enum.map(seeds, fn seed ->
-      Enum.reduce(maps, seed, fn map, n ->
-        match(n, map)
-      end)
+      Enum.reduce(maps, seed, &match/2)
     end)
     |> Enum.min()
   end
 
   def part_2(input) do
-    [seeds, maps] = parse(input)
+    [seeds, steps] = parse(input)
 
-    seeds =
-      seeds
-      |> String.split(":")
-      |> List.last()
-      |> String.split(" ", trim: true)
-      |> Enum.map(&String.to_integer/1)
-      |> Enum.chunk_every(2)
-      |> Enum.map(fn [a, b] -> a..(a + b - 1)//1 end)
-      |> Enum.map(&Range.to_list/1)
-      |> List.flatten()
-
-    Enum.map(seeds, fn seed ->
-      Enum.reduce(maps, seed, fn map, n ->
-        match(n, map)
-      end)
-    end)
+    seeds
+    |> Enum.chunk_every(2)
+    |> Enum.map(fn [s1, s2] -> s1..(s1 + s2 - 1) end)
+    |> steps(steps)
+    |> Enum.map(fn s1.._ -> s1 end)
     |> Enum.min()
   end
 
   def parse(input) do
     [seeds | maps] = input |> String.split("\n\n")
 
+    seeds =
+      seeds
+      |> String.split(":")
+      |> List.last()
+      |> String.split(" ", trim: true)
+      |> Enum.map(&String.to_integer/1)
+
     maps =
       Enum.map(maps, fn map ->
-        map |> String.split("\n") |> Enum.drop(1) |> Enum.map(&build_range/1)
+        map
+        |> String.split("\n")
+        |> Enum.drop(1)
+        |> Enum.map(&build_range/1)
+        |> Enum.sort_by(&elem(&1, 0))
       end)
 
     [seeds, maps]
   end
 
-  defp match(int, map) do
-    Enum.find_value(map, int, fn {src1.._ = src, dst1.._} ->
-      if int in src do
-        dst1 + int - src1
+  defp match(step, seed) do
+    Enum.find_value(step, seed, fn {r1, r2, offset} ->
+      if seed in r1..r2 do
+        seed - offset
       end
     end)
   end
 
+  defp steps(seed, []), do: seed
+
+  defp steps(seed, [step | rest]) do
+    seed
+    |> Enum.flat_map(&step(&1, step))
+    |> steps(rest)
+  end
+
+  defp step(s1..s2, []), do: [s1..s2]
+
+  defp step(s1..s2, [{r1, r2, offset} | rest]) do
+    cond do
+      # within
+      r1 <= s1 and s2 <= r2 ->
+        [(s1 - offset)..(s2 - offset)]
+
+      # partial @ start
+      s1 < r1 and s2 in r1..r2 ->
+        [
+          s1..(r1 - 1),
+          (r1 - offset)..(r2 - offset)
+        ]
+
+      # partial @ end?
+      s1 in r1..r2 ->
+        [
+          (s1 - offset)..(r2 - offset)
+          | step((r2 + 1)..s2, rest)
+        ]
+
+      true ->
+        step(s1..s2, rest)
+    end
+  end
+
   defp build_range(string) do
     [dst, src, len] = string |> String.split(" ") |> Enum.map(&String.to_integer/1)
-    {src..(src + len - 1)//1, dst..(dst + len - 1)//1}
+    {src, src + len - 1, src - dst}
   end
 end
 ```
@@ -103,7 +129,7 @@ Solution.part_1(input_e1)
 ```
 
 ```elixir
-Solution.part_2(input_e1)
+Solution.part_2(input)
 ```
 
-<!-- livebook:{"offset":2183,"stamp":{"token":"XCP.dFPpavAokcrjERR0on82cx1yY0-q_EYxDkl-4xYoUo9TxcYC1r9NnDEa9QD4t_wJw4WX8_HVEoPeRTWefjNIwB_isPyiljGDS6eT4w","version":2}} -->
+<!-- livebook:{"offset":2591,"stamp":{"token":"XCP.-ZlzmmhfXPOqPqpL4rG6w-WTKH6vv4Vj8tzmz-wcyB4uijstxso8FEO7nf0DBxn6OezN9Rn7tKEnEjvRiPT6Cxa6Y792RaMK3EYY5w","version":2}} -->
