@@ -51,9 +51,9 @@ defmodule Solution do
 
     (time - 1)..div(time, 2)
     |> Enum.map(&(&1 * (time - &1)))
-    |> Enum.filter(&(&1 > dist))
-    |> Enum.uniq()
-    |> Enum.count()
+    |> MapSet.new()
+    |> MapSet.filter(&(&1 > dist))
+    |> MapSet.size()
     |> Kernel.*(2)
     |> Kernel.-(even)
   end
@@ -81,4 +81,4 @@ Solution.part_2(input)
 rem(7, 2)
 ```
 
-<!-- livebook:{"offset":1720,"stamp":{"token":"XCP.jxBIVHixTnRnZKF5ssC7T9yJh-l4CJUFUzZa3P2iXY3bTHAWdbapCN7s8MqUncztZqlIejXeMDm55GiQWnxFqtI76eQ6y3sjEeC-RA","version":2}} -->
+<!-- livebook:{"offset":1724,"stamp":{"token":"XCP.meHvYac2qk4UfLILHu71rThUOJ2b9cCOOaaXEA2ZfnFhljOX2miP1C3rrCXmicAQ_aXJ4apFBVfC3pg2cB5ciaZfWhPIPIHXCsRKGg","version":2}} -->
