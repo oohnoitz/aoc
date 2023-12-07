@@ -1,0 +1,190 @@
+<!-- livebook:{"file_entries":[{"file":{"file_system_id":"local","file_system_type":"local","path":"/data/aoc/2023/input/day07-e1.txt"},"name":"day07-e1.txt","type":"file"},{"file":{"file_system_id":"local","file_system_type":"local","path":"/data/aoc/2023/input/day07.txt"},"name":"day07.txt","type":"file"}]} -->
+
+# AoC 2023 - Day 07
+
+```elixir
+Mix.install([
+  {:kino, "~> 0.11.3"}
+])
+```
+
+## Section
+
+```elixir
+input_e1 =
+  "day07-e1.txt"
+  |> Kino.FS.file_path()
+  |> File.read!()
+  |> String.trim()
+
+input =
+  "day07.txt"
+  |> Kino.FS.file_path()
+  |> File.read!()
+  |> String.trim()
+
+[input_e1, input]
+```
+
+```elixir
+defmodule Solution do
+  @cards ~w(2 3 4 5 6 7 8 9 T J Q K A)
+         |> Enum.with_index(2)
+         |> Enum.reduce(%{}, fn {v, k}, a -> Map.put(a, v, k) end)
+
+  def part_1(input) do
+    input
+    |> String.split("\n")
+    |> Enum.map(&parse_line/1)
+    |> Enum.sort(fn {[a1, b1, c1, d1, e1], rank_1, _}, {[a2, b2, c2, d2, e2], rank_2, _} ->
+      cond do
+        rank_1 < rank_2 ->
+          true
+
+        rank_1 == rank_2 and a1 < a2 ->
+          true
+
+        rank_1 == rank_2 and a1 == a2 and b1 < b2 ->
+          true
+
+        rank_1 == rank_2 and a1 == a2 and b1 == b2 and c1 < c2 ->
+          true
+
+        rank_1 == rank_2 and a1 == a2 and b1 == b2 and c1 == c2 and d1 < d2 ->
+          true
+
+        rank_1 == rank_2 and a1 == a2 and b1 == b2 and c1 == c2 and d1 == d2 and e1 < e2 ->
+          true
+
+        true ->
+          false
+      end
+    end)
+    |> Enum.with_index(1)
+    |> Enum.map(fn {{_cards, _hand, bid}, k} ->
+      k * bid
+    end)
+    |> Enum.sum()
+    |> dbg()
+  end
+
+  def part_2(input) do
+    input
+    |> String.split("\n")
+    |> Enum.map(&parse_line_2/1)
+    |> Enum.sort(&part_2_sort/2)
+    |> Enum.with_index(1)
+    |> Enum.map(fn {{_cards, _hand, bid}, k} ->
+      k * bid
+    end)
+    |> Enum.sum()
+    |> dbg()
+  end
+
+  def part_2_sort(
+        {[a1, b1, c1, d1, e1] = a, rank_1, _},
+        {[a2, b2, c2, d2, e2] = b, rank_2, _}
+      ) do
+    IO.inspect({a, rank_1, b, rank_2})
+
+    cond do
+      rank_1 < rank_2 ->
+        true
+
+      rank_1 == rank_2 and a1 < a2 ->
+        true
+
+      rank_1 == rank_2 and a1 == a2 and b1 < b2 ->
+        true
+
+      rank_1 == rank_2 and a1 == a2 and b1 == b2 and c1 < c2 ->
+        true
+
+      rank_1 == rank_2 and a1 == a2 and b1 == b2 and c1 == c2 and d1 < d2 ->
+        true
+
+      rank_1 == rank_2 and a1 == a2 and b1 == b2 and c1 == c2 and d1 == d2 and e1 < e2 ->
+        true
+
+      true ->
+        false
+    end
+  end
+
+  defp parse_line(input) do
+    [cards, bids] = String.split(input, " ")
+    cards = cards |> String.codepoints() |> Enum.map(&to_card/1)
+    {cards, hand_sort(to_hand(cards)), String.to_integer(bids)}
+  end
+
+  defp parse_line_2(input) do
+    [cards, bids] = String.split(input, " ")
+    cards = cards |> String.codepoints() |> Enum.map(&to_card_2/1)
+    {cards, hand_sort(to_hand(cards)), String.to_integer(bids)}
+  end
+
+  def to_card(card), do: Map.get(@cards, card)
+  def to_card_2("J"), do: 1
+  def to_card_2(card), do: to_card(card)
+
+  def to_hand(hand) do
+    hand |> Enum.sort(&(&2 < &1)) |> to_hand_value([]) |> Enum.sort(&(&2 < &1))
+  end
+
+  def to_hand_value([1 | rest], acc),
+    do: to_hand_value(rest, [1 | acc])
+
+  def to_hand_value([c, c, c, c, c], acc),
+    do: [5 | acc]
+
+  def to_hand_value([c, c, c, c | rest], acc),
+    do: to_hand_value(rest, [4 | acc])
+
+  def to_hand_value([c, c, c | rest], acc),
+    do: to_hand_value(rest, [3 | acc])
+
+  def to_hand_value([c, c | rest], acc),
+    do: to_hand_value(rest, [2 | acc])
+
+  def to_hand_value([_c | rest], acc),
+    do: to_hand_value(rest, acc)
+
+  def to_hand_value([], acc), do: acc
+
+  def hand_sort([5]), do: 60
+  def hand_sort([4, 1]), do: 60
+  def hand_sort([3, 1, 1]), do: 60
+  def hand_sort([2, 1, 1, 1]), do: 60
+  def hand_sort([1, 1, 1, 1, 1]), do: 60
+  def hand_sort([1, 1, 1, 1]), do: 60
+
+  def hand_sort([4]), do: 50
+  def hand_sort([3, 1]), do: 50
+  def hand_sort([2, 1, 1]), do: 50
+
+  def hand_sort([3, 2]), do: 40
+  def hand_sort([2, 2, 1]), do: 40
+
+  def hand_sort([3]), do: 30
+  def hand_sort([2, 1]), do: 30
+  def hand_sort([1, 1, 1]), do: 30
+
+  def hand_sort([2, 2]), do: 20
+
+  def hand_sort([2]), do: 10
+  def hand_sort([1]), do: 10
+  def hand_sort([1, 1]), do: 10
+
+  def hand_sort([]), do: 0
+end
+```
+
+```elixir
+Solution.part_2(input)
+```
+
+```elixir
+Solution.part_1(input)
+```
+
+<!-- livebook:{"offset":4389,"stamp":{"token":"XCP.cailWCl22_Q4oK-jKzyqNn0qg7HWseVu7oS-wNdasvW8FZYU2x5nINxbfXfOiEhAaE0AFf8devY8OmaIW6OCyr9XPdgk5dw2ghDALQ","version":2}} -->
