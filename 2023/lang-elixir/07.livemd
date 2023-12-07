@@ -36,57 +36,31 @@ defmodule Solution do
     input
     |> String.split("\n")
     |> Enum.map(&parse_line/1)
-    |> Enum.sort(fn {[a1, b1, c1, d1, e1], rank_1, _}, {[a2, b2, c2, d2, e2], rank_2, _} ->
-      cond do
-        rank_1 < rank_2 ->
-          true
-
-        rank_1 == rank_2 and a1 < a2 ->
-          true
-
-        rank_1 == rank_2 and a1 == a2 and b1 < b2 ->
-          true
-
-        rank_1 == rank_2 and a1 == a2 and b1 == b2 and c1 < c2 ->
-          true
-
-        rank_1 == rank_2 and a1 == a2 and b1 == b2 and c1 == c2 and d1 < d2 ->
-          true
-
-        rank_1 == rank_2 and a1 == a2 and b1 == b2 and c1 == c2 and d1 == d2 and e1 < e2 ->
-          true
-
-        true ->
-          false
-      end
-    end)
+    |> Enum.sort(&sort/2)
     |> Enum.with_index(1)
     |> Enum.map(fn {{_cards, _hand, bid}, k} ->
       k * bid
     end)
     |> Enum.sum()
-    |> dbg()
   end
 
   def part_2(input) do
     input
     |> String.split("\n")
     |> Enum.map(&parse_line_2/1)
-    |> Enum.sort(&part_2_sort/2)
+    |> Enum.sort(&sort/2)
+    |> IO.inspect()
     |> Enum.with_index(1)
     |> Enum.map(fn {{_cards, _hand, bid}, k} ->
       k * bid
     end)
     |> Enum.sum()
-    |> dbg()
   end
 
-  def part_2_sort(
-        {[a1, b1, c1, d1, e1] = a, rank_1, _},
-        {[a2, b2, c2, d2, e2] = b, rank_2, _}
+  def sort(
+        {[a1, b1, c1, d1, e1], rank_1, _},
+        {[a2, b2, c2, d2, e2], rank_2, _}
       ) do
-    IO.inspect({a, rank_1, b, rank_2})
-
     cond do
       rank_1 < rank_2 ->
         true
@@ -114,77 +88,60 @@ defmodule Solution do
   defp parse_line(input) do
     [cards, bids] = String.split(input, " ")
     cards = cards |> String.codepoints() |> Enum.map(&to_card/1)
-    {cards, hand_sort(to_hand(cards)), String.to_integer(bids)}
+    {cards, rank_hand(cards), String.to_integer(bids)}
   end
 
   defp parse_line_2(input) do
     [cards, bids] = String.split(input, " ")
     cards = cards |> String.codepoints() |> Enum.map(&to_card_2/1)
-    {cards, hand_sort(to_hand(cards)), String.to_integer(bids)}
+    {cards, rank_hand_with_joker(cards), String.to_integer(bids)}
   end
 
   def to_card(card), do: Map.get(@cards, card)
   def to_card_2("J"), do: 1
   def to_card_2(card), do: to_card(card)
 
-  def to_hand(hand) do
-    hand |> Enum.sort(&(&2 < &1)) |> to_hand_value([]) |> Enum.sort(&(&2 < &1))
+  def rank_hand(hand), do: hand |> Enum.frequencies() |> Map.values() |> Enum.sort() |> rank()
+
+  def rank_hand_with_joker(hand) do
+    rank = rank_hand(hand)
+    wild = hand |> Enum.frequencies() |> Map.get(1)
+
+    case {rank, wild} do
+      {_, nil} -> rank
+      # [1, 1, 1, 1, 1] -> [1, 1, 1, 2]
+      {1, _} -> 2
+      # [1, 1, 1, 2] -> [1, 1, 3]
+      {2, _} -> 4
+      # [1, 2, 2] -> [1, 3]
+      {3, 1} -> 5
+      # [1, 2, 2] -> [1, 4] if 2J
+      {3, 2} -> 6
+      # [1, 1, 3] -> [1, 4]
+      {4, _} -> 6
+      # [2, 3] - both can be J
+      {5, _} -> 7
+      {6, _} -> 7
+      {7, _} -> rank
+    end
   end
 
-  def to_hand_value([1 | rest], acc),
-    do: to_hand_value(rest, [1 | acc])
-
-  def to_hand_value([c, c, c, c, c], acc),
-    do: [5 | acc]
-
-  def to_hand_value([c, c, c, c | rest], acc),
-    do: to_hand_value(rest, [4 | acc])
-
-  def to_hand_value([c, c, c | rest], acc),
-    do: to_hand_value(rest, [3 | acc])
-
-  def to_hand_value([c, c | rest], acc),
-    do: to_hand_value(rest, [2 | acc])
-
-  def to_hand_value([_c | rest], acc),
-    do: to_hand_value(rest, acc)
-
-  def to_hand_value([], acc), do: acc
-
-  def hand_sort([5]), do: 60
-  def hand_sort([4, 1]), do: 60
-  def hand_sort([3, 1, 1]), do: 60
-  def hand_sort([2, 1, 1, 1]), do: 60
-  def hand_sort([1, 1, 1, 1, 1]), do: 60
-  def hand_sort([1, 1, 1, 1]), do: 60
-
-  def hand_sort([4]), do: 50
-  def hand_sort([3, 1]), do: 50
-  def hand_sort([2, 1, 1]), do: 50
-
-  def hand_sort([3, 2]), do: 40
-  def hand_sort([2, 2, 1]), do: 40
-
-  def hand_sort([3]), do: 30
-  def hand_sort([2, 1]), do: 30
-  def hand_sort([1, 1, 1]), do: 30
-
-  def hand_sort([2, 2]), do: 20
-
-  def hand_sort([2]), do: 10
-  def hand_sort([1]), do: 10
-  def hand_sort([1, 1]), do: 10
-
-  def hand_sort([]), do: 0
+  def rank([1, 1, 1, 1, 1]), do: 1
+  def rank([1, 1, 1, 2]), do: 2
+  def rank([1, 2, 2]), do: 3
+  def rank([1, 1, 3]), do: 4
+  def rank([2, 3]), do: 5
+  def rank([1, 4]), do: 6
+  def rank([5]), do: 7
 end
-```
-
-```elixir
-Solution.part_2(input)
 ```
 
 ```elixir
 Solution.part_1(input)
 ```
 
-<!-- livebook:{"offset":4389,"stamp":{"token":"XCP.cailWCl22_Q4oK-jKzyqNn0qg7HWseVu7oS-wNdasvW8FZYU2x5nINxbfXfOiEhAaE0AFf8devY8OmaIW6OCyr9XPdgk5dw2ghDALQ","version":2}} -->
+```elixir
+Solution.part_2(input)
+```
+
+<!-- livebook:{"offset":3306,"stamp":{"token":"XCP.qHvMBJUL9d8opI0zyPQVutwKbNp1lTPV9UgRLQahdJKN7Ofge-lZVSxAhdcH7X5Fblg8z0B716egQAJmsgBnPaSQASx4I3tBDdZLFg","version":2}} -->
