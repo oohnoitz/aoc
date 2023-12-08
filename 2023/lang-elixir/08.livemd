@@ -1,4 +1,4 @@
-<!-- livebook:{"file_entries":[{"file":{"file_system_id":"local","file_system_type":"local","path":"/data/aoc/2023/input/day08-e1.txt"},"name":"day08-e1.txt","type":"file"},{"file":{"file_system_id":"local","file_system_type":"local","path":"/data/aoc/2023/input/day08-e2.txt"},"name":"day08-e2.txt","type":"file"},{"file":{"file_system_id":"local","file_system_type":"local","path":"/data/aoc/2023/input/day08.txt"},"name":"day08.txt","type":"file"}]} -->
+<!-- livebook:{"file_entries":[{"file":{"file_system_id":"local","file_system_type":"local","path":"/data/aoc/2023/input/day08-e1.txt"},"name":"day08-e1.txt","type":"file"},{"file":{"file_system_id":"local","file_system_type":"local","path":"/data/aoc/2023/input/day08-e2.txt"},"name":"day08-e2.txt","type":"file"},{"file":{"file_system_id":"local","file_system_type":"local","path":"/data/aoc/2023/input/day08-e3.txt"},"name":"day08-e3.txt","type":"file"},{"file":{"file_system_id":"local","file_system_type":"local","path":"/data/aoc/2023/input/day08.txt"},"name":"day08.txt","type":"file"}]} -->
 
 # AoC 2023 - Day 08
 
@@ -23,25 +23,26 @@ input_e2 =
   |> File.read!()
   |> String.trim()
 
+input_e3 =
+  "day08-e3.txt"
+  |> Kino.FS.file_path()
+  |> File.read!()
+  |> String.trim()
+
 input =
   "day08.txt"
   |> Kino.FS.file_path()
   |> File.read!()
   |> String.trim()
 
-[input_e1, input_e2, input]
+[input_e1, input_e2, input_e3, input]
 ```
 
 ```elixir
-defmodule Solution do
+defmodule SolutionA do
   def part_1(input) do
     [directions, nodes] = parse(input)
     traverse(nodes, directions)
-  end
-
-  def part_2(input) do
-    input
-    |> parse()
   end
 
   def traverse(nodes, directions, steps \\ [], next \\ "AAA", counter \\ 0)
@@ -79,15 +80,43 @@ end
 ```
 
 ```elixir
-Solution.parse(input_e1)
+defmodule SolutionB do
+  def part_2(input) do
+    [directions, nodes] = SolutionA.parse(input)
+
+    nodes
+    |> Map.keys()
+    |> Enum.filter(&String.ends_with?(&1, "A"))
+    |> Enum.map(&traverse(nodes, directions, [], &1))
+    |> Enum.reduce(1, &div(&1 * &2, Integer.gcd(&1, &2)))
+  end
+
+  def traverse(nodes, directions, steps, next, counter \\ 0)
+
+  def traverse(_nodes, _directions, _steps, <<_::binary-size(2), next::binary-size(1)>>, counter)
+      when next == "Z",
+      do: counter
+
+  def traverse(nodes, directions, [], next, counter) do
+    traverse(nodes, directions, directions, next, counter)
+  end
+
+  def traverse(nodes, directions, [step | steps], next, counter) do
+    next_node = next_node(nodes[next], step)
+    traverse(nodes, directions, steps, next_node, counter + 1)
+  end
+
+  def next_node([node, _], "L"), do: node
+  def next_node([_, node], "R"), do: node
+end
 ```
 
 ```elixir
-Solution.part_1(input)
+SolutionA.part_1(input)
 ```
 
 ```elixir
-Solution.part_2(input)
+SolutionB.part_2(input)
 ```
 
-<!-- livebook:{"offset":2181,"stamp":{"token":"XCP.Hjc1MOPu121SKBJRtaQtUXnoZG0nUiyfrv1ARHPF4Zo2Ld7zCukfihNacu6u_koOftwxAsjN6Rs0xWBJK_JGhl-3FukIxpLoWhrdcw","version":2}} -->
+<!-- livebook:{"offset":3234,"stamp":{"token":"XCP.IF2l4H1zh1NB1J9SqxxyrZFObGVKwyv3uf2EmbcRrAWD_ssotxM-xxMTYHYV772b85c795DbaW2dMEdj0Aj55fiWfGZgGQ22ESzsZw","version":2}} -->
