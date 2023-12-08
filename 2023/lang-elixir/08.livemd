@@ -1,0 +1,93 @@
+<!-- livebook:{"file_entries":[{"file":{"file_system_id":"local","file_system_type":"local","path":"/data/aoc/2023/input/day08-e1.txt"},"name":"day08-e1.txt","type":"file"},{"file":{"file_system_id":"local","file_system_type":"local","path":"/data/aoc/2023/input/day08-e2.txt"},"name":"day08-e2.txt","type":"file"},{"file":{"file_system_id":"local","file_system_type":"local","path":"/data/aoc/2023/input/day08.txt"},"name":"day08.txt","type":"file"}]} -->
+
+# AoC 2023 - Day 08
+
+```elixir
+Mix.install([
+  {:kino, "~> 0.11.3"}
+])
+```
+
+## Section
+
+```elixir
+input_e1 =
+  "day08-e1.txt"
+  |> Kino.FS.file_path()
+  |> File.read!()
+  |> String.trim()
+
+input_e2 =
+  "day08-e2.txt"
+  |> Kino.FS.file_path()
+  |> File.read!()
+  |> String.trim()
+
+input =
+  "day08.txt"
+  |> Kino.FS.file_path()
+  |> File.read!()
+  |> String.trim()
+
+[input_e1, input_e2, input]
+```
+
+```elixir
+defmodule Solution do
+  def part_1(input) do
+    [directions, nodes] = parse(input)
+    traverse(nodes, directions)
+  end
+
+  def part_2(input) do
+    input
+    |> parse()
+  end
+
+  def traverse(nodes, directions, steps \\ [], next \\ "AAA", counter \\ 0)
+
+  def traverse(_nodes, _directions, _steps, "ZZZ", counter), do: counter
+
+  def traverse(nodes, directions, [], next, counter) do
+    traverse(nodes, directions, directions, next, counter)
+  end
+
+  def traverse(nodes, directions, ["L" | steps], next, counter) do
+    [next_node, _] = nodes[next]
+    traverse(nodes, directions, steps, next_node, counter + 1)
+  end
+
+  def traverse(nodes, directions, ["R" | steps], next, counter) do
+    [_, next_node] = nodes[next]
+    traverse(nodes, directions, steps, next_node, counter + 1)
+  end
+
+  def parse(input) do
+    [direction, nodes] = String.split(input, "\n\n")
+    direction = String.graphemes(direction)
+    nodes = nodes |> String.split("\n") |> Enum.map(&build/1) |> Map.new()
+
+    [direction, nodes]
+  end
+
+  def build(
+        <<key::binary-size(3), _::binary-size(4), l::binary-size(3), _::binary-size(2),
+          r::binary-size(3), _::binary>>
+      ),
+      do: {key, [l, r]}
+end
+```
+
+```elixir
+Solution.parse(input_e1)
+```
+
+```elixir
+Solution.part_1(input)
+```
+
+```elixir
+Solution.part_2(input)
+```
+
+<!-- livebook:{"offset":2181,"stamp":{"token":"XCP.Hjc1MOPu121SKBJRtaQtUXnoZG0nUiyfrv1ARHPF4Zo2Ld7zCukfihNacu6u_koOftwxAsjN6Rs0xWBJK_JGhl-3FukIxpLoWhrdcw","version":2}} -->
